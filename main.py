@@ -1,5 +1,6 @@
 import requests
 import json
+from parse import parser
 
 if __name__ == "__main__":
     api_key = "https://codeforces.com/api/"
@@ -7,6 +8,6 @@ if __name__ == "__main__":
     attr = ["problemSet.name", "tags"]
     tags = ["math", "implementation"]
 
-    response = requests.get(api_key + problem_key)
-
-    problems = json.loads(response.json()["result"]["problems"])
+    contestId = 1922
+    index = "A"
+    parser.get_problem(contestId, index)
