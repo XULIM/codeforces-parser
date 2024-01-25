@@ -10,4 +10,7 @@ if __name__ == "__main__":
 
     contestId = 1922
     index = "A"
-    parser.get_problem(contestId, index)
+    pp = parser()
+    print(pp.get_all_problems())
+    filtered_problems = pp.get_filtered_problems({"contestId": 1922})
+    print((x for x in filtered_problems))

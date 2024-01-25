@@ -5,16 +5,11 @@ import logging
 from bs4 import BeautifulSoup
 
 API_KEY = "https://codeforces.com/api/problemset.problems/"
+ATTR = ["problemSet.name", "tags"]
 
 
 class parser:
-    def __init__(self):
-        pass
-
-    def __init__(self, attr: list):
-        self.attr = attr
-
-    def __init__(self, api_key: str, attr: list):
+    def __init__(self, api_key=API_KEY, attr=ATTR):
         self.api_key = api_key
         self.attr = attr
 
@@ -24,7 +19,25 @@ class parser:
     def get_all_problems(self) -> list:
         return json.loads(self._parse())["result"]["problems"]
 
-    def get_problem(contestId: int, index: str) -> (Iterable[PageElement]) | None:
+    def get_filtered_problems(self, filters):
+        matching_problems: json = self.get_all_problems()
+        n = len(matching_problems)
+
+        for key, val in filters.items():
+            matching_problems = iter(
+                filter(lambda x: x[key] == val, matching_problems))
+
+        if len(matching_problems) == n:
+            logging.warning("No items filtered, check filter dictionary.")
+        elif len(matching_problems) == 0:
+            logging.error(
+                "Filter failed, check filter dictionary and possibly reduce the number of filters.")
+        else:
+            logging.info("Filter succeeded.")
+
+        return matching_problems
+
+    def get_problem(contestId: int, index: str):
         link = f"https://codeforces.com/problemset/problem/{contestId}/{index}"
         res = requests.get(link)
 
@@ -37,3 +50,8 @@ class parser:
             logging.exception(
                 f"Error {res.status_code}: unable to parse page.")
             return None
+
+    def get_problems_by_contest(self, contestId):
+        all_problems = self.get_all_problems()
+        matching_problem = list(
+            filter(lambda x: x["contestId"] == contestId, all_problems))
