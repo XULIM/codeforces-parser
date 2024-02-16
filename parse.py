@@ -14,17 +14,18 @@ class parser:
         self.attr = attr
 
     def _parse(self, attr: list = []) -> json:
-        return requests.get(self.api_key, attr).json()
+        res = requests.get(self.api_key)
+        return res.json()
 
     def get_all_problems(self) -> list:
-        return json.loads(self._parse())["result"]["problems"]
+        return self._parse()["result"]["problems"]
 
     def get_filtered_problems(self, filters):
-        matching_problems: json = self.get_all_problems()
+        matching_problems: list = self.get_all_problems()
         n = len(matching_problems)
 
         for key, val in filters.items():
-            matching_problems = iter(
+            matching_problems = list(
                 filter(lambda x: x[key] == val, matching_problems))
 
         if len(matching_problems) == n:
