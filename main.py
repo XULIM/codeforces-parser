@@ -1,16 +1,24 @@
 import requests
 import json
-from parse import parser
+# from parse import parser
+from parse1 import parser
+from parse1 import methods, class_parameter
+import exceptions
+from parse1 import class_parameter, methods
+
+
+def main():
+    try:
+        par = parser()
+        contest_id = 1922
+        contest_index = "A"
+        tag = class_parameter.TAGS
+        problems = par.parse_method(methods.PROBLEM_SET_STATUS.value)
+        print(problems.keys())
+    except Exception as e:
+        print(type(e))
+        print(e.args)
+
 
 if __name__ == "__main__":
-    api_key = "https://codeforces.com/api/"
-    problem_key = "problemset.problems"
-    attr = ["problemSet.name", "tags"]
-    tags = ["math", "implementation"]
-
-    contestId = 1922
-    index = "A"
-    pp = parser()
-    print(pp.get_all_problems())
-    filtered_problems = pp.get_filtered_problems({"contestId": 1922})
-    print((x for x in filtered_problems))
+    main()
