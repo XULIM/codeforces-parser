@@ -35,5 +35,5 @@ class parser():
     def parse_with_parameter(self, method, params: dict):
         param_str = ""
         for key, value in params.items():
-            param_str += f"{key}={"".join(str(i) + "&" for i in value)}" 
-        self.parse_method(self, method+params) 
+            param_str += "{0}={1}".format(key, (str(i) + "&" for i in value))
+        return self.parse_method(self, method+params)
