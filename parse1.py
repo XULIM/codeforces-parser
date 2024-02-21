@@ -36,4 +36,4 @@ class parser():
         param_str = ""
         for key, value in params.items():
             param_str += "{0}={1}".format(key, (str(i) + "&" for i in value))
-        return self.parse_method(self, method+params)
+        return self.parse_method(method+params)
