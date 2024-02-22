@@ -12,9 +12,9 @@ def main():
         par = parser()
         contest_id = 1922
         contest_index = "A"
-        tag = class_parameter.TAGS
-        problems = par.parse_method(methods.PROBLEM_SET_STATUS.value)
-        print(problems.keys())
+        mthd = methods.PROBLEM_SET.value
+        res = par.parse_method(mthd)
+        print(res)
     except Exception as e:
         print(type(e))
         print(e.args)
