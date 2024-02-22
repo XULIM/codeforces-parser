@@ -1,18 +1,7 @@
-import json
 from bs4 import BeautifulSoup as bs
 import requests
-from enum import Enum
 from exceptions import InvalidURLException, InvalidArgumentException
-
-
-class methods(Enum):
-    PROBLEM_SET = "problemset.problems?"
-    PROBLEM_SET_STATUS = "problemset.recentStatus?"
-
-
-class class_parameter(Enum):
-    TAGS = "tags"
-    NAME = "problemsetName"
+from database import parser_database
 
 
 class parser:
