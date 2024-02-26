@@ -7,3 +7,8 @@ class InvalidURLException(Exception):
 class InvalidArgumentException(Exception):
     def __init__(self, msg: str):
         super().__init__(msg)
+
+
+class InvalidDatabaseException(Exception):
+    def __init__(self, msg: str):
+        super().__init__(msg)

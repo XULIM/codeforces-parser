@@ -1,6 +1,7 @@
 import sqlite3
 from sqlite3.dbapi2 import SQLITE_ERROR
 from enums import tables
+from exceptions import InvalidDatabaseException
 
 
 class parser_database:
@@ -51,8 +52,7 @@ class parser_database:
 
     def inject_rows(self, tb_name: str, rows: dict[str, str]):
         if tb_name not in tables.list_values():
-            # TODO: create an exception for invalid table.
-            raise Exception("Error: not a valid table.")
+            raise InvalidDatabaseException("Error: not a valid table.")
 
         print("Injecting rows: {}", rows)
 
