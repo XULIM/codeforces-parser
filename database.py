@@ -18,39 +18,25 @@ class parser_database:
                 res += suffix
         return res
 
-    # TODO: create table for each contest
-    def __create_contest_table(self, tb_name: str = "contest") -> None:
-        print("Creating table: {}", tb_name)
+    def __create_problems_table(self) -> None:
+        print("Creating table: problems")
 
         self.cursor.execute(
             """
-            CREATE TABLE ? (
-                INT contestId,
-                ID VARCHAR index, 
+            CREATE TABLE problems (
+                INT contestId NOT NULL,
+                VARCHAR index NOT NULL,
                 VARCHAR name,
                 VARCHAR(11) type,
                 FLOAT points,
                 INT rating,
-                TEXT tags
-            )
-        """,
-            tb_name,
+                TEXT tags,
+                PRIMARY KEY (contestId, index)
+            );
+        """
         )
 
-    # TODO: create table containing contests
-    def __create_problems_table(self, tb_name: str = "problems") -> None:
-        print("Creating table: {}", tb_name)
-
-        self.cursor.execute(
-            """
-            CREATE TABLE ? (
-                ID INT contestId
-            )
-        """,
-            tb_name,
-        )
-
-    def inject_rows(self, tb_name: str, rows: dict[str, str]):
+    def insert_rows(self, tb_name: str, rows: dict[str, str]):
         if tb_name not in tables.list_values():
             raise InvalidDatabaseException("Error: not a valid table.")
 
