@@ -1,5 +1,4 @@
 import sqlite3
-from sqlite3.dbapi2 import SQLITE_ERROR
 from enums import tables
 from exceptions import InvalidDatabaseException
 
@@ -9,6 +8,7 @@ class parser_database:
         print("Initializing database: results.db")
         self.connection = sqlite3.connect("results.db")
         self.cursor = self.connection.cursor()
+        self.__create_problems_table()
 
     def __construct_str(self, values: list, prefix: str = "", suffix: str = ",") -> str:
         res = ""
@@ -40,7 +40,7 @@ class parser_database:
         if tb_name not in tables.list_values():
             raise InvalidDatabaseException("Error: not a valid table.")
 
-        print("Injecting rows: {}", rows)
+        print("Inserting rows: {}", rows)
 
         # create string for value binding
         values_str = self.__construct_str(tables.list_values(), ":")
