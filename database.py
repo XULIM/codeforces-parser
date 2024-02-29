@@ -4,13 +4,23 @@ from exceptions import InvalidDatabaseException
 
 
 class parser_database:
+    """
+    Database to store parsed data for faster retrieving (filtered) data.
+    """
+
     def __init__(self) -> None:
+        """
+        Creates the results.db database along with the problems table.
+        """
         print("Initializing database: results.db")
         self.connection = sqlite3.connect("results.db")
         self.cursor = self.connection.cursor()
         self.__create_problems_table()
 
     def __construct_str(self, values: list, prefix: str = "", suffix: str = ",") -> str:
+        """
+        Creates a valid string for value binding.
+        """
         res = ""
         for i, x in values:
             res += prefix + x
@@ -23,7 +33,7 @@ class parser_database:
 
         self.cursor.execute(
             """
-            CREATE TABLE problems (
+            CREATE TABLE IF NOT EXISTS problems (
                 INT contestId NOT NULL,
                 VARCHAR index NOT NULL,
                 VARCHAR name,
@@ -36,6 +46,7 @@ class parser_database:
         """
         )
 
+    # TODO: double check whether the SQL statements are valid.
     def insert_rows(self, tb_name: str, rows: dict[str, str]):
         if tb_name not in tables.list_values():
             raise InvalidDatabaseException("Error: not a valid table.")
