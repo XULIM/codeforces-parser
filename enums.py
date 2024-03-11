@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, verify, UNIQUE
 
 
 class ExtendedEnum(Enum):
@@ -7,6 +7,7 @@ class ExtendedEnum(Enum):
         return list(map(lambda c: c.value, cls))
 
 
+@verify(UNIQUE)
 class cf_problem_field(ExtendedEnum):
     """
     Represents the the fields of a problem object from CodeForces.
@@ -14,7 +15,7 @@ class cf_problem_field(ExtendedEnum):
 
     CONTEST_ID = "contestId"
     PROBLEMSET_NAME = "problemsetName"
-    ID = "index"
+    ID = "index_"
     NAME = "name"
     TYPE = "type"
     PTS = "points"
@@ -22,6 +23,7 @@ class cf_problem_field(ExtendedEnum):
     TAGS = "tags"
 
 
+@verify(UNIQUE)
 class tables(ExtendedEnum):
     """
     Represents the tables created by the database.
@@ -31,11 +33,16 @@ class tables(ExtendedEnum):
     CONTEST = "contest"
 
 
+@verify(UNIQUE)
 class methods(ExtendedEnum):
     """
     Represents the available URL methods when parsing the CodeForces API.
     """
 
+    def __str__(self) -> str:
+        return str(self.value)
+
+    EMPTY = ""
     PROBLEM_SET = "problemset.problems?"
     PROBLEM_SET_STATUS = "problemset.recentStatus?"
 
@@ -45,5 +52,7 @@ class class_parameter(ExtendedEnum):
     Represents the available URL parameters when parsing the CodeForces API.
     """
 
-    TAGS = "tags"
-    NAME = "problemsetName"
+    def __str__(self) -> str:
+        return str(self.value)
+
+    TAGS = "tags="
