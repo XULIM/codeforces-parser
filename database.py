@@ -45,6 +45,7 @@ class parser_database:
             );
         """
         )
+        print("Created table: problems")
 
     # TODO: double check whether the SQL statements are valid.
     def insert_rows(self, tb_name: str, rows: dict[str, str]):
