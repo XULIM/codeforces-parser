@@ -1,24 +1,44 @@
-import requests
-import json
-# from parse import parser
+from os import walk
+from exceptions import InvalidArgumentException, InvalidURLException
 from parse1 import parser
-from parse1 import methods, class_parameter
-import exceptions
-from parse1 import class_parameter, methods
+from database import parser_database
+from enums import methods, class_parameter
+import atexit
+from colorama import Fore, Back, Style
+import pprint
+import asyncio
+import aiohttp
 
 
-def main():
+@atexit.register
+def exit_handler() -> None:
+    print(".")
+    print(".")
+    print("Exiting Programme.")
+
+
+def err(msg: str):
+    print(Fore.RED + msg)
+
+
+async def main():
     try:
-        par = parser()
-        contest_id = 1922
-        contest_index = "A"
-        mthd = methods.PROBLEM_SET.value
-        res = par.parse_method(mthd)
-        print(res)
+        # db = parser_database()
+        # ps = parser()
+        params = {str(class_parameter.TAGS.value): ["implementation", "math"]}
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                f"https://codeforces.com/api/{str(methods.PROBLEM_SET)}"
+            ) as res:
+                print(res.status)
+                res_js = await res.json()
+                pprint.pprint(res_js["result"])
+    except InvalidURLException:
+        err("Invalid URL: check if it is a valid format.")
+    except InvalidArgumentException:
+        err("Invalid argument.")
     except Exception as e:
-        print(type(e))
-        print(e.args)
+        err(f"Error: {e}.")
 
 
-if __name__ == "__main__":
-    main()
+asyncio.run(main())
