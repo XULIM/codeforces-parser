@@ -12,7 +12,7 @@ class parser:
     def __init__(self):
         self.API = "https://codeforces.com/api/"
 
-    async def parse_method_1(
+    async def parse_async(
         self, method: methods, params: dict[str, list[str]] | None = None
     ):
         res_js = None
@@ -22,7 +22,7 @@ class parser:
             for item in params.items():
                 query += item[0] + "&".join(item[1])
         url += query
-        del query
+        print(url)
 
         async with ClientSession() as sesh:
             async with sesh.get(url) as res:
@@ -36,7 +36,7 @@ class parser:
                 else: 
                     raise InvalidURLException(url, res.status)
                 print("Parsing successful...")
-                return res_js
+        return res_js
 
     def parse_method(self, method: methods, params: dict[str, list[str]] | None = None):
         """
