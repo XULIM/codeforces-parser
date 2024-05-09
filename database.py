@@ -1,6 +1,7 @@
 import sqlite3
 from enums import tables
 from exceptions import InvalidDatabaseException
+from pprint import pprint
 
 
 class parser_database:
@@ -49,9 +50,9 @@ class parser_database:
         )
         print("Created table: problems")
 
-    def get_tables(self):
+    def print_tables(self):
         res = self.cursor.execute("SELECT name FROM sqlite_master;")
-        return res.fetchone()
+        pprint(res.fetchall())
 
     # TODO: double check whether the SQL statements are valid.
     def insert_rows(self, tb_name: str, rows: dict[str, str]):
