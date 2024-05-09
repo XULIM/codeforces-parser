@@ -6,6 +6,8 @@ from exceptions import InvalidDatabaseException
 class parser_database:
     """
     Database to store parsed data for faster retrieving (filtered) data.
+
+    Throws Error.
     """
 
     def __init__(self) -> None:
@@ -33,19 +35,23 @@ class parser_database:
 
         self.cursor.execute(
             """
-            CREATE TABLE IF NOT EXISTS problems (
-                contestId INTEGER NOT NULL,
-                index_ VARCHAR NOT NULL,
-                name VARCHAR,
-                type VARCHAR(11),
-                points FLOAT,
-                rating INT,
-                tags TEXT,
-                PRIMARY KEY (contestId, index_)
-            );
-        """
+                CREATE TABLE IF NOT EXISTS problems (
+                    contestId INTEGER NOT NULL,
+                    index_ VARCHAR NOT NULL,
+                    name VARCHAR,
+                    type VARCHAR(11),
+                    points FLOAT,
+                    rating INT,
+                    tags TEXT,
+                    PRIMARY KEY (contestId, index_)
+                );
+            """
         )
         print("Created table: problems")
+
+    def get_tables(self):
+        res = self.cursor.execute("SELECT name FROM sqlite_master;")
+        return res.fetchone()
 
     # TODO: double check whether the SQL statements are valid.
     def insert_rows(self, tb_name: str, rows: dict[str, str]):
