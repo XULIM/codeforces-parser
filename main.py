@@ -26,7 +26,7 @@ async def main():
         ps = parser()
         params = {str(class_parameter.TAGS.value): ["implementation", "math"]}
         val = await ps.parse(method=methods.PROBLEM_SET, params=params)
-        for entry in val["result"]["problems"]:
+        for entry in val["result"]:
             pprint(entry)
 
     except InvalidURLException:
