@@ -6,11 +6,11 @@ from aiohttp import ClientSession
 from misc_utils import loading
 
 
-# TODO: use async/await for parsing methods.
 class parser:
     def __init__(self):
         self.API = "https://codeforces.com/api/"
 
+    # FIX: return a generator of entry objects instead of json.
     async def parse(
         self, method: methods, params: dict[str, list[str]] | None = None
     ):

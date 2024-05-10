@@ -31,6 +31,7 @@ class parser_database:
                 res += suffix
         return res
 
+    # FIX: change table to conform with entry object.
     def __create_problems_table(self) -> None:
         print("Creating table: problems")
 
@@ -55,6 +56,7 @@ class parser_database:
         pprint(res.fetchall())
 
     # TODO: double check whether the SQL statements are valid.
+    # FIX: change table to conform with entry object.
     def insert_rows(self, tb_name: str, rows: dict[str, str]):
         if tb_name not in tables.list_values():
             raise InvalidDatabaseException("Error: not a valid table.")
