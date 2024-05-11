@@ -26,8 +26,9 @@ async def main():
         ps = parser()
         params = {str(class_parameter.TAGS.value): ["implementation", "math"]}
         val = await ps.parse(method=methods.PROBLEM_SET, params=params)
-        for entry in val["result"]:
-            pprint(entry)
+        for thing in val:
+            print(thing)
+            input()
 
     except InvalidURLException:
         err("Invalid URL: check if it is a valid format.")
