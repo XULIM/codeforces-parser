@@ -1,9 +1,7 @@
 from bs4 import BeautifulSoup as bs
-import requests
 from exceptions import InvalidURLException, InvalidArgumentException
 from enums import methods, class_parameter
 from aiohttp import ClientSession
-from misc_utils import loading
 from objects import entry, entries
 
 
@@ -12,6 +10,10 @@ class parser:
         self.API = "https://codeforces.com/api/"
 
     async def parse(self, method: methods, params: dict[str, list[str]] | None = None):
+        '''
+        Parses the CodeForces API with the given method and parameters.
+        Returns the result of the parsed json if successful, throws an error otherwise.
+        '''
         res_js = None
         url: str = self.API
         query: str = str(method.value)
@@ -23,7 +25,6 @@ class parser:
 
         async with ClientSession() as sesh:
             async with sesh.get(url) as res:
-                print(res.status)
                 if res.status:
                     print("Accessing data...")
                     res_js = await res.json()

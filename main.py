@@ -1,18 +1,16 @@
-from exceptions import InvalidArgumentException, InvalidURLException
-from parse1 import parser
-from database import parser_database
-from enums import methods, class_parameter
 import atexit
-from colorama import Fore, Back, Style
 import asyncio
-import os
+from parser import parser
+from database import parser_database
+from objects import entry
+from enums import methods, class_parameter
+from exceptions import InvalidArgumentException, InvalidURLException
+from colorama import Fore, Back, Style
 from pprint import pprint
 
 
 @atexit.register
 def exit_handler() -> None:
-    print(".")
-    print(".")
     print("Exiting Programme.")
 
 
@@ -25,10 +23,22 @@ async def main():
         # db = parser_database()
         ps = parser()
         params = {str(class_parameter.TAGS.value): ["implementation", "math"]}
-        val = await ps.parse(method=methods.PROBLEM_SET, params=params)
-        for thing in val:
-            print(thing)
-            input()
+        # val = await ps.parse(method=methods.PROBLEM_SET, params=params)
+        fake_problem = {
+            "contestId": 1,
+            "index": 'A',
+            "name": "hello world",
+            "type": "PROGRAMMING",
+            "rating": 800,
+            "tags": ['implementation', 'math']
+        }
+        fake_stats = {
+            "contestId": 1,
+            "index": 'A',
+            "solvedCount": 1500
+        }
+        en = entry(fake_problem, fake_stats)
+        print(str(en))
 
     except InvalidURLException:
         err("Invalid URL: check if it is a valid format.")
