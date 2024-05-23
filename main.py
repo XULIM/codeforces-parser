@@ -20,7 +20,7 @@ def err(msg: str):
 
 async def main():
     try:
-        # db = parser_database()
+        db = parser_database()
         ps = parser()
         params = {str(class_parameter.TAGS.value): ["implementation", "math"]}
         # val = await ps.parse(method=methods.PROBLEM_SET, params=params)

@@ -1,16 +1,18 @@
+import sqlite3
+
 class entry:
-    '''
+    """
     Represents an entry object for database.
     contest_id: int
-    index: str 
+    index: str
     name: str
     rating: int
     tags: list[str]
     solved_count: int
-    '''
+    """
+
     def __init__(self, problem: dict, stats: dict):
-        '''
-        '''
+        """ """
         self.contest_id: int = problem["contestId"]
         self.index: str = problem["index"]
         self.name: str = problem["name"]
@@ -19,15 +21,20 @@ class entry:
         self.solved_count = stats.get("solvedCount", 0)
 
     def __str__(self):
-        st = f'''
+        st = f"""
             contest_id = {self.contest_id} --\n
             index = {self.index} --\n
             name = {self.name} --\n
             rating = {self.rating} --\n
             tags = {"".join((e + " " for e in self.tags))} --\n
             solved_count = {self.solved_count} --\n
-            '''
+            """
         return st
+    
+    def __conform__(self, protocol):
+        if protocol is sqlite3.PrepareProtocol:
+            return str(self)
+
 
 class entries:
     def __init__(self, jsn):
