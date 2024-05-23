@@ -1,19 +1,22 @@
 import sqlite3
+from objects import entry
 from enums import tables
 from exceptions import InvalidDatabaseException
 from pprint import pprint
 
+def adapt_entry(en):
+    return str(en)
 
 class parser_database:
     """
     Database to store parsed data for faster retrieving (filtered) data.
 
-    Throws Error.
+    Throws error on failed database transaction.
     """
 
     def __init__(self) -> None:
         """
-        Creates the results.db database along with the problems table.
+        Creates the results.db database file along with the problems table.
         """
         print("Initializing database: results.db")
         self.connection = sqlite3.connect("results.db")
@@ -31,43 +34,34 @@ class parser_database:
                 res += suffix
         return res
 
-    # FIX: change table to conform with entry object.
     def __create_problems_table(self) -> None:
-        print("Creating table: problems")
-
+        print("Creating: problems table")
         self.cursor.execute(
             """
                 CREATE TABLE IF NOT EXISTS problems (
                     contestId INTEGER NOT NULL,
                     index_ VARCHAR NOT NULL,
                     name VARCHAR,
-                    type VARCHAR(11),
-                    points FLOAT,
                     rating INT,
                     tags TEXT,
+                    solved_count INT,
                     PRIMARY KEY (contestId, index_)
                 );
             """
         )
         print("Created table: problems")
 
-    def print_tables(self):
+    def get_tables(self):
         res = self.cursor.execute("SELECT name FROM sqlite_master;")
-        pprint(res.fetchall())
+        return res.fetchone()
 
-    # TODO: double check whether the SQL statements are valid.
+    def insert(self, table: str, en: entry):
+        pass
+
     # FIX: change table to conform with entry object.
-    def insert_rows(self, tb_name: str, rows: dict[str, str]):
-        if tb_name not in tables.list_values():
-            raise InvalidDatabaseException("Error: not a valid table.")
-        print("Inserting rows...")
-
-        # create string for value binding
-        values_str = self.__construct_str(tables.list_values(), ":")
-
-        self.cursor.executemany(f"""INSERT INTO {tb_name} VALUES({values_str})""", rows)
-        self.connection.commit()
-        print("Committed row insertions.")
+    def insert_rows(self, table: str, entries):
+        if table not in self.get_tables():
+            raise sqlite3.DatabaseError("table " + table + " not found.")
 
     def select_rows(self, rows):
         print("Selecting rows: {}", rows)
