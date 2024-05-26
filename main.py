@@ -39,6 +39,7 @@ async def main():
         }
         en = entry(fake_problem, fake_stats)
         print(en.conform_str())
+        print(repr(en))
 
     except InvalidURLException:
         err("Invalid URL: check if it is a valid format.")
