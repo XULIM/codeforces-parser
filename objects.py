@@ -1,5 +1,6 @@
 import sqlite3
 
+
 class entry:
     """
     Represents an entry object for database.
@@ -21,7 +22,7 @@ class entry:
         self.solved_count = stats.get("solvedCount", 0)
 
     def __str__(self):
-        st = f"""
+        return f"""
             contest_id = {self.contest_id} --\n
             index = {self.index} --\n
             name = {self.name} --\n
@@ -29,11 +30,13 @@ class entry:
             tags = {"".join((e + " " for e in self.tags))} --\n
             solved_count = {self.solved_count} --\n
             """
-        return st
-    
+
+    def conform_str(self):
+        return f"contestId={self.contest_id},problemIndex={self.index},name={self.name},rating={self.rating},tags='[{"".join((e + "," for e in self.tags))}]',solvedCount={self.solved_count}"
+
     def __conform__(self, protocol):
         if protocol is sqlite3.PrepareProtocol:
-            return str(self)
+            return self.conform_str()
 
 
 class entries:

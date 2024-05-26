@@ -40,11 +40,11 @@ class parser_database:
             """
                 CREATE TABLE IF NOT EXISTS problems (
                     contestId INTEGER NOT NULL,
-                    index_ VARCHAR NOT NULL,
+                    problemIndex VARCHAR NOT NULL,
                     name VARCHAR,
                     rating INT,
                     tags TEXT,
-                    solved_count INT,
+                    solvedCount INT,
                     PRIMARY KEY (contestId, index_)
                 );
             """

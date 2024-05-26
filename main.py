@@ -38,7 +38,7 @@ async def main():
             "solvedCount": 1500
         }
         en = entry(fake_problem, fake_stats)
-        print(str(en))
+        print(en.conform_str())
 
     except InvalidURLException:
         err("Invalid URL: check if it is a valid format.")
