@@ -36,7 +36,7 @@ class parser:
                     raise InvalidURLException(url, res.status)
                 print("Parsing successful...")
 
-        return res_js["result"]
+        return entries(res_js["result"])
 
     # TODO: select from database then use bs4 to parse content from website
     def get_problem(self, contest_id: int, problem_index: str):
