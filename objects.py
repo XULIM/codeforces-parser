@@ -19,33 +19,43 @@ class entry:
         self.name: str = problem["name"]
         self.rating: int = problem.get("rating", 0)
         self.tags: list[str] = problem.get("tags", [])
-        self.solved_count = stats.get("solvedCount", 0)
+        self.solved_count: int = (
+            stats.get("solvedCount", 0)
+            if (self.contest_id == stats["contestId"] and self.index == stats["index"])
+            else 0
+        )
 
     def __repr__(self):
-        return ("objects.entry(\n\t"
-                f"contest_id = {self.contest_id}\n\t"
-                f"index = {self.index}\n\t"
-                f"name = {self.name}\n\t"
-                f"rating = {self.rating}\n\t"
-                f"tags = [{"".join((e + "," for e in self.tags))}]\n\t"
-                f"solved_count = {self.solved_count}"
-                ")")
+        return (
+            "objects.entry(\n\t"
+            f"contest_id = {self.contest_id}\n\t"
+            f"index = {self.index}\n\t"
+            f"name = {self.name}\n\t"
+            f"rating = {self.rating}\n\t"
+            f"tags = [{"".join((e + "," for e in self.tags))}]\n\t"
+            f"solved_count = {self.solved_count}"
+            ")"
+        )
 
     def __str__(self):
-        return (f"contest_id = {self.contest_id}\n"
-                f"index = {self.index}\n"
-                f"name = {self.name}\n"
-                f"rating = {self.rating}\n"
-                f"tags = '[{"".join((e + "," for e in self.tags))}]'\n"
-                f"solved_count = {self.solved_count}")
+        return (
+            f"contest_id = {self.contest_id}\n"
+            f"index = {self.index}\n"
+            f"name = {self.name}\n"
+            f"rating = {self.rating}\n"
+            f"tags = [{"".join((e + ", " for e in self.tags))}]\n"
+            f"solved_count = {self.solved_count}"
+        )
 
     def conform_str(self):
-        return (f"contestId={self.contest_id},"
-                f"problemIndex={self.index},"
-                f"name={self.name},"
-                f"rating={self.rating},"
-                f"tags='[{"".join((e + "," for e in self.tags))}]',"
-                f"solvedCount={self.solved_count}")
+        return (
+            f"contestId={self.contest_id},"
+            f"problemIndex={self.index},"
+            f"name={self.name},"
+            f"rating={self.rating},"
+            f"tags='[{"".join((e + "," for e in self.tags))}]',"
+            f"solvedCount={self.solved_count}"
+        )
 
     def __conform__(self, protocol):
         if protocol is sqlite3.PrepareProtocol:
@@ -53,5 +63,18 @@ class entry:
 
 
 class entries:
-    def __init__(self, jsn):
-        pass
+    def __init__(self, res: dict):
+        self.entries = []
+        if len(res["problems"]) != len(res["problemStatistics"]):
+            print(
+                "WARNING: the problems dictionary and the problemStatistics dictionary are not "
+                "matching in value, a default value of 0 for solved_count will be used."
+            )
+
+        for i in range(len(res["problems"])):
+            self.entries.append(
+                entry(res["problems"][i], res["problemStatistics"][i])
+            )
+
+    def __str__(self):
+        return "".join(str(x) + "\n" for x in self.entries)
