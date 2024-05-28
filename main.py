@@ -20,13 +20,12 @@ def err(msg: str):
 
 async def main():
     try:
-        db = parser_database()
         ps = parser()
         params = {str(class_parameter.TAGS.value): ["implementation", "math"]}
         val = await ps.parse(method=methods.PROBLEM_SET)
         for obj in val.entries:
             input()
-            print(obj)
+            print(obj.conform_str_insert())
     except InvalidURLException:
         err("Invalid URL: check if it is a valid format.")
     except InvalidArgumentException:

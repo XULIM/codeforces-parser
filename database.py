@@ -1,11 +1,9 @@
 import sqlite3
-from objects import entry
+from objects import entry, entries
 from enums import tables
 from exceptions import InvalidDatabaseException
 from pprint import pprint
 
-def adapt_entry(en):
-    return str(en)
 
 class parser_database:
     """
@@ -22,17 +20,7 @@ class parser_database:
         self.connection = sqlite3.connect("results.db")
         self.cursor = self.connection.cursor()
         self.__create_problems_table()
-
-    def __construct_str(self, values: list, prefix: str = "", suffix: str = ",") -> str:
-        """
-        Creates a valid string for value binding.
-        """
-        res = ""
-        for i, x in values:
-            res += prefix + x
-            if i + 1 != len(values):
-                res += suffix
-        return res
+        self.connection.close()
 
     def __create_problems_table(self) -> None:
         print("Creating: problems table")
@@ -45,23 +33,24 @@ class parser_database:
                     rating INT,
                     tags TEXT,
                     solvedCount INT,
-                    PRIMARY KEY (contestId, index_)
+                    PRIMARY KEY (contestId, problemIndex)
                 );
             """
         )
         print("Created table: problems")
 
     def get_tables(self):
+        """
+        Returns the tables in the database.
+        """
         res = self.cursor.execute("SELECT name FROM sqlite_master;")
         return res.fetchone()
 
-    def insert(self, table: str, en: entry):
-        pass
-
     # FIX: change table to conform with entry object.
-    def insert_rows(self, table: str, entries):
+    def insert_rows(self, table: str, entries: entries):
         if table not in self.get_tables():
             raise sqlite3.DatabaseError("table " + table + " not found.")
+        self.cursor.execute("INSERT INTO problems VALUES ?", entries.conform_str_insert())
 
     def select_rows(self, rows):
         print("Selecting rows: {}", rows)

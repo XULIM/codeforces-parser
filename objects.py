@@ -13,10 +13,17 @@ class entry:
     """
 
     def __init__(self, problem: dict, stats: dict):
-        """ """
+        """
+        contest_id (int): has to be parsed, throws error if it DNE.
+        index (str): has to be parsed, throws error if it DNE.
+        name (str): defaults to "" if DNE.
+        rating (int): defaults to 0 if DNE.
+        tags (list[str]): defaults to [] (empty list) if DNE.
+        solved_count (int): defaults to 0 if DNE or mismatch in problem and stats.
+        """
         self.contest_id: int = problem["contestId"]
         self.index: str = problem["index"]
-        self.name: str = problem["name"]
+        self.name: str = problem.get("name", "")
         self.rating: int = problem.get("rating", 0)
         self.tags: list[str] = problem.get("tags", [])
         self.solved_count: int = (
@@ -32,7 +39,7 @@ class entry:
             f"index = {self.index}\n\t"
             f"name = {self.name}\n\t"
             f"rating = {self.rating}\n\t"
-            f"tags = [{"".join((e + "," for e in self.tags))}]\n\t"
+            f"tags = [{",".join(e for e in self.tags)}]\n\t"
             f"solved_count = {self.solved_count}"
             ")"
         )
@@ -45,6 +52,18 @@ class entry:
             f"rating = {self.rating}\n"
             f"tags = [{"".join((e + ", " for e in self.tags))}]\n"
             f"solved_count = {self.solved_count}"
+        )
+
+    def conform_str_insert(self):
+        return (
+            "("
+            f'{self.contest_id},'
+            f'"{self.index}",'
+            f'"{self.name}",'
+            f'{self.rating},'
+            f'"{",".join(e for e in self.tags)}",'
+            f"{self.solved_count}"
+            ")"
         )
 
     def conform_str(self):
@@ -64,7 +83,7 @@ class entry:
 
 class entries:
     def __init__(self, res: dict):
-        self.entries = []
+        self.entries: list[entry] = []
         if len(res["problems"]) != len(res["problemStatistics"]):
             print(
                 "WARNING: the problems dictionary and the problemStatistics dictionary are not "
@@ -72,9 +91,10 @@ class entries:
             )
 
         for i in range(len(res["problems"])):
-            self.entries.append(
-                entry(res["problems"][i], res["problemStatistics"][i])
-            )
+            self.entries.append(entry(res["problems"][i], res["problemStatistics"][i]))
+
+    def conform_str_insert(self):
+        return ",".join(x.conform_str_insert() for x in self.entries)
 
     def __str__(self):
         return "".join(str(x) + "\n" for x in self.entries)
