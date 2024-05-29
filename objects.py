@@ -23,7 +23,6 @@ class entry:
         """
         self.contest_id: int = problem["contestId"]
         self.index: str = problem["index"]
-        self.name: str = problem.get("name", "")
         self.rating: int = problem.get("rating", 0)
         self.tags: list[str] = problem.get("tags", [])
         self.solved_count: int = (
@@ -37,7 +36,6 @@ class entry:
             "objects.entry(\n\t"
             f"contest_id = {self.contest_id}\n\t"
             f"index = {self.index}\n\t"
-            f"name = {self.name}\n\t"
             f"rating = {self.rating}\n\t"
             f"tags = [{",".join(e for e in self.tags)}]\n\t"
             f"solved_count = {self.solved_count}"
@@ -46,39 +44,13 @@ class entry:
 
     def __str__(self):
         return (
-            f"contest_id = {self.contest_id}\n"
-            f"index = {self.index}\n"
-            f"name = {self.name}\n"
-            f"rating = {self.rating}\n"
-            f"tags = [{"".join((e + ", " for e in self.tags))}]\n"
-            f"solved_count = {self.solved_count}"
-        )
-
-    def conform_str_insert(self):
-        return (
-            "("
-            f'{self.contest_id},'
-            f'"{self.index}",'
-            f'"{self.name}",'
-            f'{self.rating},'
-            f'"{",".join(e for e in self.tags)}",'
-            f"{self.solved_count}"
-            ")"
-        )
-
-    def conform_str(self):
-        return (
-            f"contestId={self.contest_id},"
-            f"problemIndex={self.index},"
-            f"name={self.name},"
-            f"rating={self.rating},"
-            f"tags='[{"".join((e + "," for e in self.tags))}]',"
-            f"solvedCount={self.solved_count}"
+            f'({self.contest_id}, "{self.index}", {self.rating}, '
+            f'"{",".join(e for e in self.tags)}", {self.solved_count})'
         )
 
     def __conform__(self, protocol):
         if protocol is sqlite3.PrepareProtocol:
-            return self.conform_str()
+            return str(self)
 
 
 class entries:
@@ -93,8 +65,8 @@ class entries:
         for i in range(len(res["problems"])):
             self.entries.append(entry(res["problems"][i], res["problemStatistics"][i]))
 
-    def conform_str_insert(self):
-        return ",".join(x.conform_str_insert() for x in self.entries)
-
     def __str__(self):
-        return "".join(str(x) + "\n" for x in self.entries)
+        return ",".join(str(x) for x in self.entries)
+
+    def seg(self, l: int = 0, r: int = 0):
+        self.entries = self.entries[l:r]
