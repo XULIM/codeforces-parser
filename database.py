@@ -24,12 +24,14 @@ class parser_database:
 
     def __create_problems_table(self) -> None:
         print("Creating: problems table")
+        self.cursor.execute("""
+        DROP TABLE IF EXISTS problems;
+        """)
         self.cursor.execute(
             """
                 CREATE TABLE IF NOT EXISTS problems (
                     contestId INTEGER NOT NULL,
                     problemIndex VARCHAR NOT NULL,
-                    name VARCHAR,
                     rating INT,
                     tags TEXT,
                     solvedCount INT,
@@ -43,14 +45,17 @@ class parser_database:
         """
         Returns the tables in the database.
         """
+        self.connection = sqlite3.connect("results.db")
+        self.cursor = self.connection.cursor()
         res = self.cursor.execute("SELECT name FROM sqlite_master;")
+        self.connection.close()
         return res.fetchone()
 
     # FIX: change table to conform with entry object.
     def insert_rows(self, table: str, entries: entries):
         if table not in self.get_tables():
             raise sqlite3.DatabaseError("table " + table + " not found.")
-        self.cursor.execute("INSERT INTO problems VALUES ?", entries.conform_str_insert())
+        self.cursor.execute("INSERT INTO problems VALUES ?;", entries.conform_str_insert())
 
     def select_rows(self, rows):
         print("Selecting rows: {}", rows)
