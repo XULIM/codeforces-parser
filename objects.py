@@ -48,6 +48,9 @@ class entry:
             f'"{",".join(e for e in self.tags)}", {self.solved_count})'
         )
 
+    def conform(self):
+        return (self.contest_id, self.index, self.rating, ",".join(e for e in self.tags), self.solved_count)
+
     def __conform__(self, protocol):
         if protocol is sqlite3.PrepareProtocol:
             return str(self)
@@ -67,6 +70,9 @@ class entries:
 
     def __str__(self):
         return ",".join(str(x) for x in self.entries)
+
+    def conform(self):
+        return [x.conform() for x in self.entries]
 
     def seg(self, l: int = 0, r: int = 0):
         self.entries = self.entries[l:r]

@@ -46,10 +46,11 @@ async def main():
         ps = parser()
         params = {str(class_parameter.TAGS.value): ["implementation", "math"]}
         val = await ps.parse(method=methods.PROBLEM_SET)
-        cur.execute(f"INSERT INTO problems VALUES {val};")
+        cur.executemany("INSERT INTO problems VALUES (?, ?, ?, ?, ?)", val.conform())
+        con.commit()
 
-        # cur.execute("SELECT * FROM problems;")
-        # print(cur.fetchall())
+        cur.execute("SELECT * FROM problems;")
+        print(cur.fetchall())
         con.close()
     except InvalidURLException:
         print("Invalid URL: check if it is a valid format.")
