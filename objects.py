@@ -23,7 +23,7 @@ class entry:
         """
         self.contest_id: int = problem["contestId"]
         self.index: str = problem["index"]
-        self.rating: int = problem.get("rating", 0)
+        self.rating: int = problem.get("rating", 0) or problem.get("points", 0)
         self.tags: list[str] = problem.get("tags", [])
         self.solved_count: int = (
             stats.get("solvedCount", 0)
