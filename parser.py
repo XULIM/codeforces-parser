@@ -44,5 +44,28 @@ class parser:
         return entries(res_js["result"]) if res_js else None
 
     # TODO: select from database then use bs4 to parse content from website
-    def get_problem(self, contest_id: int, problem_index: str):
-        pass
+    async def get_page(self, contest_id: int, index: str):
+        with open("index.html", "w") as f:
+            f.write(f"{contest_id},{index}\n")
+        parse_url = f"https://codeforces.com/contest/{contest_id}/problem/{index}"
+        async with ClientSession() as sesh:
+            async with sesh.get(parse_url) as res:
+                if res.status == 200:
+                    html_doc = await res.content.read()
+                    soup = bs(html_doc, "html.parser")
+                    content = soup.find("div", {"class": "problem-statement"})
+                    if content:
+                        with open("index.html", "a") as f:
+                            f.write(str(content))
+
+                    else: 
+                        print("No content available.")
+                else: 
+                    print("Could not read page content.")
+
+    def get_tests(self, html_doc):
+        soup = bs(html_doc, "html.parser")
+        pres = soup.find_all("pre")
+        for pre in pres:
+            for child in pre:
+                print(child.get_text())
