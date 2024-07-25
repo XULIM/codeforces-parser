@@ -1,8 +1,8 @@
-from bs4 import BeautifulSoup as bs, Tag
+from bs4 import BeautifulSoup as bs
 from exceptions import InvalidURLException, InvalidArgumentException
-from enums import methods, class_parameter
+from enums import methods
 from aiohttp import ClientSession
-from objects import entry, entries
+from objects import entries
 
 
 class parser:
