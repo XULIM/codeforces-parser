@@ -1,4 +1,4 @@
-from bs4 import BeautifulSoup as bs
+from bs4 import BeautifulSoup as bs, Tag
 from exceptions import InvalidURLException, InvalidArgumentException
 from enums import methods, class_parameter
 from aiohttp import ClientSession
@@ -43,9 +43,17 @@ class parser:
 
         return entries(res_js["result"]) if res_js else None
 
-    def read(self):
+    def find(self, name: str, attrs: dict[str, str] = {}):
         with open(self.html, "r") as f:
-            pass
+            soup = bs(f, "html.parser")
+            tag = soup.find(name, attrs)
+            return soup.find(name, attrs) if tag else None
+
+    def find_all(self, name: str, attrs: dict[str, str] = {}):
+        with open(self.html, "r") as f:
+            soup = bs(f, "html.parser")
+            tags = soup.find(name, attrs)
+            return soup.find_all(name, attrs) if tags else None
 
     def write(self, html, *args):
         with open(self.html, "w") as f:
@@ -64,9 +72,8 @@ class parser:
                     html_doc = await res.content.read()
                     self.write(html_doc, f"{contest_id},{index}")
                 else: 
-                    print("Could not read page content.")
-                    with open(self.html, "w") as f:
-                        f.write("")
+                    print("Error reading page: ", res.status)
+                    self.write("")
                     return False
         return True
 
@@ -74,12 +81,9 @@ class parser:
         if not await self.get_page(contest_id, index): 
             raise InvalidArgumentException\
             (f"Could not get page content with contest_id: {contest_id}, index: {index}")
-        with open(self.html) as f:
-            soup = bs(f, "html.parser")
-            pres = soup.find_all("pre")
-            if (pres is not None):
-                for pre in pres:
-                    for child in pre.children:
-                        print(child.get_text())
-            else:
-                print("No content found")
+        pres = self.find_all("pre")
+        if pres is None:
+            return None
+        for pre in pres:
+            for child in pre.children:
+                print(child.get_text())
