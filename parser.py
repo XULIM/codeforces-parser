@@ -3,12 +3,12 @@ from exceptions import InvalidURLException, InvalidArgumentException
 from enums import methods, class_parameter
 from aiohttp import ClientSession
 from objects import entry, entries
-import json
 
 
 class parser:
     def __init__(self):
         self.API = "https://codeforces.com/api/"
+        self.html = "index.html"
 
     async def parse(self, method: methods, params: dict[str, list[str]] | None = None):
         '''
@@ -43,10 +43,12 @@ class parser:
 
         return entries(res_js["result"]) if res_js else None
 
-    # TODO: select from database then use bs4 to parse content from website
-    async def get_page(self, contest_id: int, index: str):
-        with open("index.html", "w") as f:
-            f.write(f"{contest_id},{index}\n")
+    # TODO: code clean up.
+    async def get_page(self, contest_id: int, index: str) -> bool:
+        with open(self.html, "r") as f:
+            line = f.readline()
+            if line == f"{contest_id},{index}":
+                return True
         parse_url = f"https://codeforces.com/contest/{contest_id}/problem/{index}"
         async with ClientSession() as sesh:
             async with sesh.get(parse_url) as res:
@@ -55,17 +57,23 @@ class parser:
                     soup = bs(html_doc, "html.parser")
                     content = soup.find("div", {"class": "problem-statement"})
                     if content:
-                        with open("index.html", "a") as f:
+                        with open(self.html, "w") as f:
+                            f.write(f"{contest_id},{index}\n")
                             f.write(str(content))
-
                     else: 
-                        print("No content available.")
+                        print("No page content available.")
+                        with open(self.html, "w") as f:
+                            f.write("")
+                        return False
                 else: 
                     print("Could not read page content.")
+                    with open(self.html, "w") as f:
+                        f.write("")
+                    return False
+        return True
 
-    def get_tests(self, html_doc):
-        soup = bs(html_doc, "html.parser")
-        pres = soup.find_all("pre")
-        for pre in pres:
-            for child in pre:
-                print(child.get_text())
+    def get_tests(self, contest_id: int, index: str):
+        if not self.get_page(contest_id, index): 
+            raise InvalidArgumentException\
+            (f"Could not get page content with contest_id: {contest_id}, index: {index}")
+        soup = bs(self.html, "html.parser")
