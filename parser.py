@@ -6,9 +6,9 @@ from objects import entry, entries
 
 
 class parser:
-    def __init__(self):
+    def __init__(self, html_doc = "index.html"):
         self.API = "https://codeforces.com/api/"
-        self.html = "index.html"
+        self.html = html_doc
 
     async def parse(self, method: methods, params: dict[str, list[str]] | None = None):
         '''
@@ -43,28 +43,26 @@ class parser:
 
         return entries(res_js["result"]) if res_js else None
 
-    # TODO: code clean up.
-    async def get_page(self, contest_id: int, index: str) -> bool:
+    def read(self):
         with open(self.html, "r") as f:
-            line = f.readline()
-            if line == f"{contest_id},{index}":
-                return True
+            pass
+
+    def write(self, html, *args):
+        with open(self.html, "w") as f:
+            soup = bs(html, "html.parser")
+            title = soup.new_tag("title")
+            title.attrs = {"id": "problem"}
+            title.string = "".join(args)
+            soup.append(title)
+            f.write(soup.prettify())
+
+    async def get_page(self, contest_id: int, index: str) -> bool:
         parse_url = f"https://codeforces.com/contest/{contest_id}/problem/{index}"
         async with ClientSession() as sesh:
             async with sesh.get(parse_url) as res:
                 if res.status == 200:
                     html_doc = await res.content.read()
-                    soup = bs(html_doc, "html.parser")
-                    content = soup.find("div", {"class": "problem-statement"})
-                    if content:
-                        with open(self.html, "w") as f:
-                            f.write(f"{contest_id},{index}\n")
-                            f.write(str(content))
-                    else: 
-                        print("No page content available.")
-                        with open(self.html, "w") as f:
-                            f.write("")
-                        return False
+                    self.write(html_doc, f"{contest_id},{index}")
                 else: 
                     print("Could not read page content.")
                     with open(self.html, "w") as f:
@@ -72,8 +70,16 @@ class parser:
                     return False
         return True
 
-    def get_tests(self, contest_id: int, index: str):
-        if not self.get_page(contest_id, index): 
+    async def get_tests(self, contest_id: int, index: str):
+        if not await self.get_page(contest_id, index): 
             raise InvalidArgumentException\
             (f"Could not get page content with contest_id: {contest_id}, index: {index}")
-        soup = bs(self.html, "html.parser")
+        with open(self.html) as f:
+            soup = bs(f, "html.parser")
+            pres = soup.find_all("pre")
+            if (pres is not None):
+                for pre in pres:
+                    for child in pre.children:
+                        print(child.get_text())
+            else:
+                print("No content found")
