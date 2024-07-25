@@ -3,3 +3,4 @@ __pycache__
 results.db
 results.bak.db
 *.db
+index.html
