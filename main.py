@@ -1,13 +1,8 @@
 import atexit
 import asyncio
-import sqlite3
-from aiohttp import ClientSession
-import json
 from parser import parser
 from db import db
-from objects import entry, entries
 from enums import methods, class_parameter
-from exceptions import InvalidArgumentException, InvalidURLException
 
 
 @atexit.register
@@ -18,7 +13,7 @@ def exit_handler() -> None:
 async def main():
     try: 
         p = parser()
-        await p.get_page(1988, "b")
+        await p.get_tests(1992, "e")
     except Exception as e:
         print("Error: ", str(e))
 
