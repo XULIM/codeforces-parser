@@ -7,3 +7,5 @@ For now I have already stored parsed data in the database so I will work on the 
 and see if I get unbanned.
 
 2024-07-10 13:57 - I am unbanned.
+
+2024-08-12 01:34 - Got IP blocked for web scraping the actual contest problem pages.
