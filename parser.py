@@ -99,14 +99,14 @@ class parser:
                     return False
         return True
 
-    async def get_tests(self, contest_id: int, index: str) -> dict[str, list[str]]:
+    async def get_tests(self, contest_id: int, index: str) -> dict[str, list[str]] | None:
         test = {"input": [], "output": []}
         if not await self.get_page(contest_id, index): 
-            return test
+            return None
         input = self.find("div", {"class": "input"})
         output = self.find("div", {"class": "output"})
         if not self.__verify(input) or not self.__verify(output):
-            return test
+            return None
         p_i = input.findChild("pre") # type: ignore
         p_o = output.findChild("pre") # type: ignore
         if self.__verify(p_i):
