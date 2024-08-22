@@ -9,7 +9,7 @@ from exceptions import InvalidArgumentException, InvalidURLException
 from objects import entries
 
 
-class parser:
+class CFParser:
     def __init__(self, html_doc = "index.html"):
         self.API = "https://codeforces.com/api/"
         self.html = html_doc
@@ -95,6 +95,7 @@ class parser:
                     self.write(html_doc, f"{contest_id},{index}")
                 else: 
                     print("Error reading page: ", res.status)
+                    print(res.headers)
                     self.write("")
                     return False
         return True
