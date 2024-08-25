@@ -7,12 +7,21 @@ from bs4 import NavigableString, ResultSet, Tag
 from enums import methods
 from exceptions import InvalidArgumentException, InvalidURLException
 from objects import entries
+from ua import Rotator
 
 
 class CFParser:
     def __init__(self, html_doc = "index.html"):
+        """
+        Initializes a CFParser object with the following fields:
+            - self.API: the codeforces API.
+            - self.html: the html doc that will be parsed to.
+            - self.user_agents: the list of user-agents to be used for bs4 parsing.
+        """
         self.API = "https://codeforces.com/api/"
         self.html = html_doc
+        with open("./ua_list", "r") as f:
+            self.user_agents = f.read().splitlines()
 
     def __verify(self, tag: Tag | NavigableString | None) -> bool:
         """
@@ -34,7 +43,7 @@ class CFParser:
                 query += item[0] + "&".join(item[1])
         url += query
         print(f"Parsing from URL: {url}")
-
+        header = {"User-Agent": None}
         async with ClientSession() as sesh:
             async with sesh.get(url) as res:
                 print(res.status)
@@ -55,18 +64,29 @@ class CFParser:
         return entries(res_js["result"]) if res_js else None
 
     def find(self, name: str, attrs: dict[str, str] = {}) -> Tag | NavigableString | None:
+        """
+        Finds the first tag with the respective attributes (attrs).
+        Returns the Tag | NavigableString object if found, None otherwise.
+        """
         with open(self.html, "r") as f:
             soup = bs(f, "html.parser")
             tag = soup.find(name, attrs)
             return soup.find(name, attrs) if tag else None
 
     def find_all(self, name: str, attrs: dict[str, str] = {}) -> ResultSet[Any] | None:
+        """
+        Finds all of the tags with the respective name and attributes (attrs).
+        Returns a ResultSet of all the matching Tag | NavigableString objects if found, None otherwise.
+        """
         with open(self.html, "r") as f:
             soup = bs(f, "html.parser")
             tags = soup.find(name, attrs)
             return soup.find_all(name, attrs) if tags else None
 
     def write(self, html, *args) -> NoneType:
+        """
+        Writes html and args to self.html.
+        """
         with open(self.html, "w") as f:
             soup = bs(html, "html.parser")
             title = soup.new_tag("title")
@@ -101,6 +121,11 @@ class CFParser:
         return True
 
     async def get_tests(self, contest_id: int, index: str) -> dict[str, list[str]] | None:
+        """
+        Gets the test cases ("input" and "output") of a CodeForces problem.
+        Returns a dict with keys "input" and "output" and their respective values in list[str] if found, 
+        None otherwise.
+        """
         test = {"input": [], "output": []}
         if not await self.get_page(contest_id, index): 
             return None
