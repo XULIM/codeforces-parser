@@ -1,4 +1,3 @@
-from collections.abc import Sequence
 from functools import cached_property
 from ua_parser import user_agent_parser as uap
 from typing import List
@@ -29,10 +28,18 @@ class UserAgent:
         return self.string
 
 class Rotator:
+    """
+    Weight based User-Agent rotator.
+    """
     def __init__(self, user_agents: List[UserAgent]):
         self.user_agents = [UserAgent(ua) for ua in user_agents]
     
     def weigh_user_agent(self, ua: UserAgent):
+        """
+        Weighs each User-Agent depending on the last time it was used, 
+        the browser type and version, and the operating system.
+        Returns the weight.
+        """
         weight: float = 1000
 
         if ua.last_used:
@@ -60,6 +67,10 @@ class Rotator:
         return weight
 
     def get(self):
+        """
+        Gets a User-Agent at random with the weight of each User-Agent.
+        Returns the random choice and updates the last_used field to the time of selection.
+        """
         ua_weights = [self.weigh_user_agent(ua) for ua in self.user_agents]
         ua_choice = random.choices(self.user_agents, weights=ua_weights, k=1)[0]
         ua_choice.last_used = time()
