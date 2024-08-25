@@ -72,9 +72,16 @@ class entries:
     def __str__(self):
         return ",".join(str(x) for x in self.entries)
 
+    def size(self):
+        return len(self.entries)
+
     def conform(self):
         """Returns a list of conformed tuples for database operations."""
         return [x.conform() for x in self.entries]
 
     def seg(self, l: int = 0, r: int = 0):
         self.entries = self.entries[l:r]
+
+class tests: 
+    def __init__(self):
+        pass
