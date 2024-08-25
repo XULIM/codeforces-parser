@@ -1,20 +1,45 @@
 import atexit
 import asyncio
-from parser import parser
-from db import db
+import os
+from time import asctime, localtime
+from typing import NoReturn
 
+from aiohttp import ClientSession
+from bs4 import BeautifulSoup
+from enums import methods
+from parser import CFParser
+from db import db
+from ua_parser import user_agent_parser as uap
+from ua import Rotator
 
 @atexit.register
 def exit_handler() -> None:
     print("Exiting Programme.")
 
+def get_last_modified_time(file: str):
+    return localtime(os.path.getmtime(file))
+
+async def get_user_agents():
+    url = "https://www.useragentlist.net/"
+    user_agents = []
+    async with ClientSession() as sesh:
+        async with sesh.get(url) as res:
+            if res.status == 200:
+                soup = BeautifulSoup(await res.text(), "html.parser")
+                for user_agent in soup.select("pre.wp-block-code"):
+                    user_agents.append(user_agent.text)
+            else:
+                print("Error: ", res.status)
+
+    with open("./ua_list", "w") as f:
+        for ua in user_agents:
+            f.write(ua + "\n")
 
 async def main():
     try: 
-        p = parser()
-        d = await p.get_tests(1992, "e")
-        print(d["input"])
-        print(d["output"])
+        print(asctime(get_last_modified_time("ua_list")))
+        cfparser = CFParser()
+        print(cfparser.user_agents[0])
     except Exception as e:
         print("Error: ", str(e))
 
