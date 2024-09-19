@@ -11,6 +11,7 @@ from parser import CFParser
 from db import db
 from ua_parser import user_agent_parser as uap
 from ua import Rotator
+import p1
 
 @atexit.register
 def exit_handler() -> None:
@@ -38,8 +39,9 @@ async def get_user_agents():
 async def main():
     try: 
         print(asctime(get_last_modified_time("ua_list")))
-        cfparser = CFParser()
-        print(cfparser.user_agents[0])
+        input, output = await p1.get_tests(1998, "C")
+        print("input: ", input)
+        print("output: ", output)
     except Exception as e:
         print("Error: ", str(e))
 

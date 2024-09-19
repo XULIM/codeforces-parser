@@ -18,10 +18,12 @@ class CFParser:
             - self.html: the html doc that will be parsed to.
             - self.user_agents: the list of user-agents to be used for bs4 parsing.
         """
-        self.API = "https://codeforces.com/api/"
-        self.html = html_doc
+        self.API: str = "https://codeforces.com/api/"
+        self.html: str = html_doc
         with open("./ua_list", "r") as f:
-            self.user_agents = f.read().splitlines()
+            user_agents = f.read().splitlines()
+        self.rotator: Rotator = Rotator(user_agents)
+        self.user_agent: str = str(self.rotator.get())
 
     def __verify(self, tag: Tag | NavigableString | None) -> bool:
         """
@@ -43,8 +45,8 @@ class CFParser:
                 query += item[0] + "&".join(item[1])
         url += query
         print(f"Parsing from URL: {url}")
-        header = {"User-Agent": None}
-        async with ClientSession() as sesh:
+        header = {"User-Agent": self.user_agent}
+        async with ClientSession(headers=header) as sesh:
             async with sesh.get(url) as res:
                 print(res.status)
                 if res.status == 200:
@@ -101,15 +103,19 @@ class CFParser:
         The parsed page is stored in self.html (default value of "index.html").
         Returns True if parsing is successful, False otherwise.
         """
+        url = "https://codeforces.com/contest/1998/problem/C"
         parse_url = f"https://codeforces.com/contest/{contest_id}/problem/{index}"
-        async with ClientSession() as sesh:
+        print("Parsing URL: ", parse_url)
+        header = {"User-Agent": self.user_agent}
+        async with ClientSession(headers=header) as sesh:
             async with sesh.get(parse_url) as res:
+                print("Current Header: ", sesh.headers)
                 if res.status == 200:
                     html_doc = await res.content.read()
+                    print(html_doc)
                     problem_statement = self.find("div", {"class": "problem-statement"})
                     if not self.__verify(problem_statement):
-                        print(f"Could not parse problem with the given contest_id: {contest_id}\
-                              and index: {index}.")
+                        print(f"Could not parse problem with the given contest_id: {contest_id} and index: {index}.")
                         self.write("")
                         return False
                     self.write(html_doc, f"{contest_id},{index}")
@@ -128,20 +134,21 @@ class CFParser:
         """
         test = {"input": [], "output": []}
         if not await self.get_page(contest_id, index): 
+            print("Could not parse page")
             return None
         input = self.find("div", {"class": "input"})
         output = self.find("div", {"class": "output"})
         if not self.__verify(input) or not self.__verify(output):
             return None
-        p_i = input.findChild("pre") # type: ignore
-        p_o = output.findChild("pre") # type: ignore
+        p_i = input.findChild("pre")
+        p_o = output.findChild("pre")
         if self.__verify(p_i):
-            for child in p_i.children: # type: ignore
+            for child in p_i.children:
                 text = child.get_text().strip()
                 if text:
                     test["input"].append(text)
         if self.__verify(p_o):
-            text = p_o.get_text().strip() # type: ignore
+            text = p_o.get_text().strip()
             if text:
                 vec = text.splitlines()
                 for i in range(len(vec)):
