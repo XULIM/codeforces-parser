@@ -7,18 +7,18 @@ import random
 # code below is mostly from https://scrapfly.io/blog/user-agent-header-in-web-scraping
 class UserAgent:
     '''Container for User-Agent header'''
-    def __init__(self, string):
+    def __init__(self, string: str):
         self.string: str = string
         self.parsed_string = uap.Parse(string)
         self.last_used = time()
 
     @cached_property
     def browser_version(self):
-        return self.parsed_string['user_agent']['major'] #type:ignore
+        return self.parsed_string['user_agent']['major']
 
     @cached_property
     def browser(self):
-        return self.parsed_string['user_agent']['family'] #type:ignore
+        return self.parsed_string['user_agent']['family']
 
     @cached_property
     def os(self):
@@ -31,10 +31,10 @@ class Rotator:
     """
     Weight based User-Agent rotator.
     """
-    def __init__(self, user_agents: List[UserAgent]):
+    def __init__(self, user_agents: List[str]):
         self.user_agents = [UserAgent(ua) for ua in user_agents]
     
-    def weigh_user_agent(self, ua: UserAgent):
+    def weigh_user_agent(self, ua: UserAgent) -> float:
         """
         Weighs each User-Agent depending on the last time it was used, 
         the browser type and version, and the operating system.
@@ -66,7 +66,7 @@ class Rotator:
 
         return weight
 
-    def get(self):
+    def get(self) -> UserAgent:
         """
         Gets a User-Agent at random with the weight of each User-Agent.
         Returns the random choice and updates the last_used field to the time of selection.
