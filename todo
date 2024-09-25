@@ -1,0 +1,26 @@
+test out the new get_problems command
+test out the new Entry object
+
+refactor db module
+    - modified the fields of each entry
+    - tags should be a json list instead of text
+refactor entries module?
+
+the input and output of each problem is not stored by default
+    - should they be stored by default?
+    - will too many requests/parsing attempts result in a block
+    - should they be parsed when the problem is attempted and then stored
+
+should the problem statement of each problem be stored in the db?
+should the problem statement be added to each file?
+upon problem AC the problem should be tagged as solved (is_solved = 1)
+should we check on the user profile to sync all solved problems.
+
+after finishing the above
+make a cfparse command that parses the input and output to file?
+    - usable in live contests
+able to filter problems by tag (db operations)
+able to filter problems by rating range (db operations)
+able to clone whole contest rounds
+able to mash up exercises of different ratings and tags to a mock contest
+able to submit through terminal?
