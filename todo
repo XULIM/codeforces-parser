@@ -1,5 +1,5 @@
-test out the new get_problems command
-test out the new Entry object
+// test out the new get_problems command
+// test out the new Entry object
 
 refactor db module
     - modified the fields of each entry
