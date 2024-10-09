@@ -25,7 +25,7 @@ class Status(Enum):
     def __str__(self):
         return self.string
 
-class Endpoint(Enum):
+class Endpoints(Enum):
     Problems = "problemset.problems?"
     Status = "problemset.recentStatus?"
 
@@ -92,7 +92,7 @@ async def get_user_agents():
         return (Status.ERR, str(e))
 
 async def get_problems() -> tuple[Status, dict[str, Any]]:
-    api_url = f"https://codeforces.com/api/{Endpoint.Problems.value}"
+    api_url = f"https://codeforces.com/api/{Endpoints.Problems.value}"
     header = {"User-Agent": str(ROTATOR.get())}
     print(f"Parsing CodeForces API: {api_url}.")
     sleep(1) # To avoid timeout due to spamming
