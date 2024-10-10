@@ -11,7 +11,7 @@ class Attributes(tuple, Enum):
         obj = tuple.__new__(cls, values[0])
         obj._value_ = values[0]
         return obj
-    ID = ("contest_id", "INTEGER NOT NULL"),
+    ID = ("cid", "INTEGER NOT NULL"),
     INDEX = ("pindex", "VARCHAR NOT NULL"),
     NAME = ("name", "TEXT"),
     POINTS = ("points", "INT"),
@@ -46,9 +46,9 @@ def establish() -> tuple[Connection, Cursor]:
         raise sqlite3.DatabaseError("Could not establish sqlite3 connection")
     return (con, cur)
 
-def cc_close(con: Connection | None, cur: Cursor | None = None):
+def ccfree(con: Connection | None, cur: Cursor | None = None):
     """
-    Closes sqlite3.Connection and sqlite3.Cursor if they are open.
+    Closes/Frees any existing sqlite3.Connection and sqlite3.Cursor.
     """
     if (cur):
         cur.close()
@@ -59,11 +59,11 @@ def cc_close(con: Connection | None, cur: Cursor | None = None):
 def drop_table() -> void:
     con, cur = establish()
     try:
-        cur.execute(f"DROP TABLE IF EXISTS ?;", TABLE_NAME)
+        cur.execute(f"DROP TABLE IF EXISTS {TABLE_NAME};")
     except sqlite3.Error as e:
         raise sqlite3.DatabaseError(f"Could not drop table {TABLE_NAME}.", str(e))
     finally:
-        cc_close(con,cur)
+        ccfree(con,cur)
 
 def create_table() -> void:
     """
@@ -86,5 +86,22 @@ def create_table() -> void:
         log(Status.ERR, "from create_table: could not create table.", str(e))
         raise sqlite3.DatabaseError("Could not create table", str(e))
     finally:
-        cc_close(con,cur)
+        ccfree(con,cur)
     log(Status.OK, "from create_table: successfully created table [problems].")
+
+def insert(entry: list | tuple):
+    con, cur = establish()
+    log(Status.OK, "connection established")
+    cmd = f"INSERT INTO {TABLE_NAME} VALUES(?,?,?,?,?,?,?);"
+    try:
+        if (type(entry) is list):
+            cur.executemany(cmd, entry)
+        else:
+            cur.execute(cmd, entry)
+    except sqlite3.Error as e:
+        log(Status.ERR, "could not insert into table.", str(e))
+        raise sqlite3.OperationalError("Failed to insert into problems table.")
+    finally:
+        ccfree(con,cur)
+    log(Status.OK, f"inserted values into {TABLE_NAME}.")
+
