@@ -14,11 +14,11 @@ class UserAgent:
 
     @cached_property
     def browser_version(self):
-        return self.parsed_string['user_agent']['major']
+        return self.parsed_string['user_agent']['major'] #type:ignore
 
     @cached_property
     def browser(self):
-        return self.parsed_string['user_agent']['family']
+        return self.parsed_string['user_agent']['family'] #type:ignore
 
     @cached_property
     def os(self):
