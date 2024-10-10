@@ -1,8 +1,7 @@
-import p1
 import sqlite3
 from sqlite3 import Connection, Cursor
 from enum import Enum
-from p1 import log, Status
+from ps import log, Status
 
 type void = None
 
