@@ -18,7 +18,7 @@ HTML_PATH = "index.html"
 class Status(Enum):
     OK = (0, "[OK]")
     ERR = (1, "[ERR]")
-    WARNING = (2, "[!]")
+    WARN = (2, "[!]")
     def __init__(self, num, string):
         self.num = num
         self.string = string
@@ -29,34 +29,31 @@ class Endpoints(Enum):
     Problems = "problemset.problems?"
     Status = "problemset.recentStatus?"
 
-class Entry():
-    def __init__(self, problems: dict):
-        try:
-            self.contest_id = problems["contestId"]
-            self.index = problems["index"]
-            self.name = escape(problems.get("name", ""))
-            self.points = problems.get("points", 0)
-            self.rating = problems.get("rating", 0)
-            self.tags = problems.get("tags", [])
-            self.is_solved = False
-        except Exception as e:
-            log(Status.ERR, "from Entry.__init__: cannot create entry object.", 
-                "Details:", e)
-
-    def __str__(self):
-        return (f"{self.contest_id},"
-            f"{self.index}," +
-            f"{self.name}," +
-            f"{self.points}," +
-            f"{self.rating}," +
-            f"{self.tags}," +
-            f"{(1 if self.is_solved else 0)}"
-        )
-
-    def conform(self):
-        return self.__str__()
+def dtot(problem: dict[str,Any]) -> tuple:
+    """
+    Dictionary to tuple for the problems table.
+    Returns:
+        res (tuple): a conformed tuple for database binding.
+    """
+    cid: int = problem.get("contestId", -1)
+    pindex: str = problem.get("index", "")
+    name: str = escape(problem.get("name", ""))
+    points: int = problem.get("points", 0)
+    rating: int = problem.get("rating", 0)
+    ltags = problem.get("tags", [])
+    tags = ",".join(tag for tag in ltags)
+    solved = 0
+    res = (cid, pindex, name, points, rating, tags, solved)
+    if cid == -1 or not pindex:
+        log(Status.ERR, "could not make tuple:", res)
+    return res;
 
 def file_refresh(file: str, cd_days = 21, cd_hours = 0, cd_minutes = 0, cd_seconds = 0) -> bool:
+    """
+    Checks if file need to be refreshed.
+    Default refresh timer is 21 days.
+    Initially created to rotate user-agents every 21 days, but works for any file.
+    """
     cd = timedelta(days=cd_days, hours=cd_hours, minutes=cd_minutes, seconds=cd_seconds)
     delta_t = timedelta(seconds=(time() - os.path.getmtime(file)))
     diff = delta_t - cd
@@ -65,9 +62,20 @@ def file_refresh(file: str, cd_days = 21, cd_hours = 0, cd_minutes = 0, cd_secon
     return False
 
 def log(stat: Status, *args):
-    print(f"{str(stat)}:", "".join(args))
+    """
+    Could throw an error if the passed in args does not have a valid __str__ method.
+    """
+    print(f"{str(stat)}: {args[0]}", *args[1:], sep="\n\t>> ")
 
 async def get_user_agents():
+    """
+    Gets user-agents from "https://www.useraggentlist.net/".
+
+    Returns tuple in the form of (Status.OK, user_agents: str),
+        where user_agents are separated by "\\n" if parsing is successful.
+    Otherwise returns a tuple in the form of (Status.ERR, e: str),
+        where e is the error message.
+    """
     url = "https://www.useragentlist.net/"
     user_agents = []
     sleep(1) # To avoid timeout due to spamming
@@ -91,7 +99,13 @@ async def get_user_agents():
     except Exception as e:
         return (Status.ERR, str(e))
 
-async def get_problems() -> tuple[Status, dict[str, Any]]:
+async def get_problems() -> tuple[Status, list]:
+    """
+    Gets problems from the CodeForces API.
+    Returns a tuple in the form of (Status.OK, problems: list),
+        where problems is list of tuple that is compliant to database bindings.
+    Otherwise returns a tuple in the form of (Status.ERR, []).
+    """
     api_url = f"https://codeforces.com/api/{Endpoints.Problems.value}"
     header = {"User-Agent": str(ROTATOR.get())}
     print(f"Parsing CodeForces API: {api_url}.")
@@ -104,10 +118,13 @@ async def get_problems() -> tuple[Status, dict[str, Any]]:
             else:
                 log(Status.ERR, f"from get_problems: unable to access CodeForces API", 
                     f"({res.status}).")
-                return (Status.ERR, {})
-    return (Status.OK, results["result"]["problems"])
+                return (Status.ERR, [])
+    return (Status.OK, [dtot(p) for p in results["result"]["problems"]])
 
 async def get_page(contest_id: int, index: str) -> None:
+    """
+    Parses the entire problem page given the contest_id and index.
+    """
     parse_url = f"https://codeforces.com/contest/{contest_id}/problem/{index}"
     print("Starting parsing on URL: ", parse_url)
     header = {"User-Agent": str(ROTATOR.get())}
@@ -123,6 +140,9 @@ async def get_page(contest_id: int, index: str) -> None:
                 log(Status.ERR, f"from get_page: unable to access website {res.status}.")
 
 async def get_tests(contest_id: int, index: str) -> tuple[list[str] | Status, list[str] | Status]:
+    """
+    Gets the test case for the specific problem.
+    """
     print(f"Getting test cases for problem {contest_id} {index}.")
     with open(HTML_PATH, "r") as f:
         bs = BeautifulSoup(f, "html.parser")
