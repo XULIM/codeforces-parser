@@ -1,7 +1,7 @@
 import atexit
 import asyncio
-import gen, d1, p1
-from p1 import Status, log
+from lib import gen, db, ps
+from lib.ps import Status, log
 
 
 @atexit.register
@@ -10,7 +10,7 @@ def exit_handler() -> None:
 
 
 async def main():
-    con,cur = d1.establish()
+    con,cur = db.establish()
     try: 
         prob1 = {
             "contestId": 123,
@@ -20,18 +20,18 @@ async def main():
             "rating": 1500,
             "tags": ["implementation", "dp", "segment tree"]
         }
-        entry = p1.dtot(prob1)
-        # d1.drop_table()
-        # d1.create_table()
-        # status, problems = await p1.get_problems()
+        entry = ps.dtot(prob1)
+        # db.drop_table()
+        # db.create_table()
+        # status, problems = await ps.get_problems()
         # if (status == Status.OK):
-        #     d1.insert(problems)
+        #     db.insert(problems)
         # for line in cur.execute("SELECT cid, pindex, name, rating, tags FROM problems;"):
         #     print(line)
         log(Status.WARN, "this is a warning message.", prob1, entry)
     except Exception as e:
         log(Status.ERR, str(e))
     finally:
-        d1.ccfree(con,cur)
+        db.ccfree(con,cur)
 
 asyncio.run(main())
