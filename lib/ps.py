@@ -3,11 +3,12 @@ import os
 from typing import Any
 from aiohttp import ClientSession
 from bs4 import BeautifulSoup, Tag
-from ua import Rotator
 from enum import Enum
 from re import escape
 from time import time, sleep
 from datetime import timedelta
+
+from lib.ua import Rotator
 
 UA_PATH = "ua_list"
 with open(UA_PATH, "r") as f:
@@ -65,7 +66,7 @@ def log(stat: Status, *args):
     """
     Could throw an error if the passed in args does not have a valid __str__ method.
     """
-    print(f"{str(stat)}: {args[0]}", *args[1:], sep="\n\t>> ")
+    print(f"{str(stat)}::{args[0]}", *args[1:], sep="\n\t>> ")
 
 async def get_user_agents():
     """
@@ -126,7 +127,7 @@ async def get_page(contest_id: int, index: str) -> None:
     Parses the entire problem page given the contest_id and index.
     """
     parse_url = f"https://codeforces.com/contest/{contest_id}/problem/{index}"
-    print("Starting parsing on URL: ", parse_url)
+    log(Status.OK, "Starting parsing on URL: ", parse_url)
     header = {"User-Agent": str(ROTATOR.get())}
     sleep(1) # To avoid timeout due to spamming
     async with ClientSession(headers=header) as session:
