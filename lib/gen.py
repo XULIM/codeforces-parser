@@ -1,4 +1,6 @@
 import functools
+from lib import db
+from lib.ps import Status, log, file_refresh
 
 type void = None
 
@@ -8,10 +10,9 @@ def catfile(template: str):
         temp = f.read()
     return temp
 
-def genfile(template: str, filename: str) -> void:
+def genfile(cid: int, pindex: str, template: str) -> void:
     template = catfile(template)
-    with open(filename, "w") as f:
-        f.write(template)
+    pass
     
 """
 generate for problems a, b, c,...
@@ -20,5 +21,5 @@ so we need to know how many problems there are
 what each there indexes are,
 i.e. if problems like c1, c2 exists
 """
-def gencontest():
+def gencontest(cid: int):
     pass
