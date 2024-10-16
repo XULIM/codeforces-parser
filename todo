@@ -1,3 +1,5 @@
+work on gen module to generate files for contest.
+
 the input and output of each problem is not stored by default
     - should they be stored by default?
     - will too many requests/parsing attempts result in a block
