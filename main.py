@@ -10,8 +10,6 @@ type void = None
 def exit_handler() -> None:
     print("Exiting Programme.")
 
-# TODO: this function does not cover all edge cases.
-# The problems table could be created but without problems.
 async def populate_table(forced: bool = False) -> void:
     # ---
     async def make():
@@ -24,17 +22,27 @@ async def populate_table(forced: bool = False) -> void:
             return
         log(Status.OK, "from populate_table: ", "table population successful.")
     # ---
-    if (not forced or not file_refresh(db.DB_NAME, cd_days=3)):
-        if (not db.table_exists()):
-            await make()
-        else:
-            log(Status.OK, "from populate_table: ", "table exists and populated.")
+    if (not os.path.exists(db.DB_NAME)):
+        log(Status.WARN, "from populate_table:", f"file {db.DB_NAME} does not exist.")
+        try:
+            f = open(db.DB_NAME, "w")
+            f.write("")
+        except Exception as e:
+            log(Status.ERR, "from populate_table:", f"file {db.DB_NAME} cannot be created.", "aborting.")
+            return
+        finally:
+            f.close()
+        log(Status.OK, "from populate_table: ", f"file {db.DB_NAME} created.")
+        await make()
         return
-    os.remove(db.DB_NAME)
-    db.drop_table()
-    await make()
+    if (forced or file_refresh(db.DB_NAME, cd_days=3)):
+        db.drop_table()
+        await make()
+        return
 
 async def main() -> void:
+    os.remove(db.DB_NAME)
+    print(os.path.exists(db.DB_NAME))
     con,cur = db.establish()
     try: 
         prob1 = {
@@ -46,13 +54,14 @@ async def main() -> void:
             "tags": ["implementation", "dp", "segment tree"]
         }
         entry = ps.dtot(prob1)
-        await populate_table(forced=True)
-        cid = 1420
-        found, li = db.select_contest(cid)
-        if (not found):
-            log(Status.WARN, f"could not find the contest {cid}.")
-        else:
-            print(li)
+        print(os.path.exists(db.DB_NAME))
+        # await populate_table()
+        # cid = 1420
+        # found, li = db.select_contest(cid)
+        # if (not found):
+        #     log(Status.WARN, f"could not find the contest {cid}.")
+        # else:
+        #     print(li)
     except Exception as e:
         log(Status.ERR, str(e))
     finally:
