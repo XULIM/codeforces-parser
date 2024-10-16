@@ -72,14 +72,17 @@ def ccfree(con: Connection | None, cur: Cursor | None = None):
 def drop_table() -> void:
     """
     Drops the problems table.
+    Raises sqlite3.OperationalError if fails.
     """
     con, cur = establish()
     try:
+        log(Status.WARN, f"dropping table [{TABLE_NAME}]")
         cur.execute(f"DROP TABLE IF EXISTS {TABLE_NAME};")
     except sqlite3.Error as e:
-        raise sqlite3.DatabaseError(f"Could not drop table {TABLE_NAME}.", str(e))
+        raise sqlite3.OperationalError(f"Could not drop table [{TABLE_NAME}].", str(e))
     finally:
         ccfree(con,cur)
+    log(Status.OK, "from drop_table:", f"table [{TABLE_NAME}] has been dropped successfully.")
 
 def create_table() -> void:
     """
@@ -159,3 +162,18 @@ def select_contest(cid: int) -> tuple:
         ccfree(con,cur)
     log(Status.OK, f"contest found.")
     return (True, li)
+
+def select_problem(cid: int, pindex: str):
+    con, cur = establish()
+    try:
+        cmd = (f"SELECT {Attributes.NAME.first}," + 
+            f"{Attributes.RATING.first}," +
+            f"{Attributes.TAGS.first}," +
+            f"{Attributes.SOLVED.first}" +
+            f"from {TABLE_NAME};"
+        )
+        print(cmd)
+    except sqlite3.Error as e:
+        pass
+    finally:
+        ccfree(con,cur)
