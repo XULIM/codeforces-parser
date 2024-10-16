@@ -1,4 +1,5 @@
 # codeforces-parser
+Parses the CodeForces website for problems.
 
 ## Updates
 2024-06-03 12:00 - Got IP blocked for too many requests in the limited time frame. Gonna wait for a few 
