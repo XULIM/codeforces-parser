@@ -49,24 +49,30 @@ def dtot(problem: dict[str,Any]) -> tuple:
         log(Status.ERR, "could not make tuple:", res)
     return res;
 
+# TODO: fix this, the current method refreshes the file even if the file is not meant to be refreshed.
 def file_refresh(file: str, cd_days = 21, cd_hours = 0, cd_minutes = 0, cd_seconds = 0) -> bool:
     """
-    Checks if file need to be refreshed.
+    Checks if file need to be created/refreshed.
     Default refresh timer is 21 days.
     Initially created to rotate user-agents every 21 days, but works for any file.
     """
-    cd = timedelta(days=cd_days, hours=cd_hours, minutes=cd_minutes, seconds=cd_seconds)
-    delta_t = timedelta(seconds=(time() - os.path.getmtime(file)))
-    diff = delta_t - cd
-    if diff.total_seconds():
-        return True
-    return False
+    try:
+        if (not os.path.exists(file)):
+            return True
+        cd = timedelta(days=cd_days, hours=cd_hours, minutes=cd_minutes, seconds=cd_seconds)
+        delta_t = timedelta(seconds=(time() - os.path.getmtime(file)))
+        diff = delta_t - cd
+        if diff.total_seconds():
+            return True
+        return False
+    except Exception as e:
+        raise Exception("from file_refresh: file access error. Details: ", str(e))
 
-def log(stat: Status, *args):
+def log(stat: Status, msg="", *args):
     """
     Could throw an error if the passed in args does not have a valid __str__ method.
     """
-    print(f"{str(stat)}::{args[0]}", *args[1:], sep="\n\t>> ")
+    print(f"{str(stat)}::{msg}", *args, sep="\n\t>> ")
 
 async def get_user_agents():
     """
