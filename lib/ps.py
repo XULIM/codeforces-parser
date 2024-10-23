@@ -146,7 +146,42 @@ async def get_page(contest_id: int, index: str) -> None:
             else: 
                 log(Status.ERR, f"from get_page: unable to access website {res.status}.")
 
-async def get_tests(contest_id: int, index: str) -> tuple[list[str] | Status, list[str] | Status]:
+async def get_tests(contest_id: int, index: str): 
+    print(f"Getting test cases for problem {contest_id} {index}.")
+    await get_page(contest_id, index)
+    with open(HTML_PATH, "r") as f:
+        bs = BeautifulSoup(f, "html.parser")
+    samples = bs.find("div", {"class": "sample-test"})
+    # --- 
+    def get(name: str, attrs: dict[str,str]):
+        res = []
+        divs = bs.findAll(name, attrs)
+        if not divs:
+            log(Status.ERR, f"from get_tests: cannot find {name} with the following attributes: {attrs}.")
+            return Status.ERR
+        for div in divs:
+            ls = []
+            pre = div.findChild("pre")
+            for child in pre.children:
+                if (text := child.get_text().strip()):
+                    ls.append(text)
+            res.append(ls)
+        return res
+    # ---
+    inputs = get("div", {"class":"input"})
+    if (inputs is not Status.ERR):
+        log(Status.OK, f"successfully parsed the input for {contest_id} {index}.")
+    else:
+        log(Status.ERR, f"from get_tests: could not parse input for {contest_id} {index}.")
+    outputs = get("div", {"class":"output"})
+    if (outputs is not Status.ERR):
+        log(Status.OK, f"successfully parsed the output for {contest_id} {index}.")
+    else:
+        log(Status.ERR, f"from get_tests: could not parse ouput for {contest_id} {index}.")
+    return (inputs, outputs)
+
+
+async def get_tests_old(contest_id: int, index: str) -> tuple[list[str] | Status, list[str] | Status]:
     """
     Gets the test case for the specific problem.
     """
