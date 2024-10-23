@@ -1,3 +1,4 @@
+import os
 import functools
 from lib import db
 from lib.ps import Status, log, file_refresh
@@ -10,7 +11,7 @@ def catfile(template: str):
         temp = f.read()
     return temp
 
-def genfile(cid: int, pindex: str, template: str) -> void:
+def genfile(cid: int, pindex: str) -> void:
     template = catfile(template)
     pass
     
@@ -22,4 +23,14 @@ what each there indexes are,
 i.e. if problems like c1, c2 exists
 """
 def gencontest(cid: int):
-    pass
+    dir_path = str(cid)
+    found, pindices = db.select_contest(cid)
+    if (not found):
+        log(Status.ERR, f"from gencontest: could not find contest: {cid}.", "aborting.")
+    try:
+        log(Status.WARN, f"creating directory: {dir_path}.")
+        os.mkdir(dir_path)
+        for pindex in pindices:
+            genfile(contest, pindex)
+    except Exception as e:
+        log(Status.ERR, f"from gencontest: an unexpected error occurred.", e)
