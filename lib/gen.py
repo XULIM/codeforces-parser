@@ -1,7 +1,8 @@
 import os
 import functools
 from lib import db
-from lib.ps import Status, log, file_refresh
+from lib.plog import Status, log
+from lib.consts import TEMPLATE_CPP
 
 type void = None
 
@@ -11,9 +12,11 @@ def catfile(template: str):
         temp = f.read()
     return temp
 
-def genfile(cid: int, pindex: str) -> void:
-    template = catfile(template)
-    pass
+def genfile(cid: int, pindex: str, prefix: bool = True) -> void:
+    template = catfile(TEMPLATE_CPP)
+    filename = f"{cid}{pindex}" if prefix else pindex
+    with open(filename, "w") as f:
+        f.write(template)
     
 """
 generate for problems a, b, c,...

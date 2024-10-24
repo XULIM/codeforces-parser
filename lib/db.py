@@ -1,7 +1,8 @@
 import sqlite3
 from sqlite3 import Connection, Cursor
 from enum import Enum
-from lib.ps import log, Status
+from lib.consts import DB_PATH, DB_TABLE
+from lib.plog import Status, log
 
 type void = None
 
@@ -32,9 +33,6 @@ class Attributes(tuple, Enum):
     TAGS = ("tags", "TEXT"),
     SOLVED = ("solved", "INT"),
 
-DB_NAME = "results.db"
-TABLE_NAME = "problems"
-
 def doc_param(*sub):
     """
     Decorator that allows doc strings to accept parameters.
@@ -44,18 +42,18 @@ def doc_param(*sub):
         return obj
     return dec
 
-@doc_param(DB_NAME)
+@doc_param(DB_PATH)
 def establish() -> tuple[Connection, Cursor]:
     """
-    Establishes sqlite3 connection to DB_NAME({0}).
+    Establishes sqlite3 connection to DB_PATH({0}).
     Raises sqlite3.DatabaseError if fails.
     Returns a tuple in the form of (sqlite3.Connection, sqlite3.Cursor).
     """
     try:
-        con = sqlite3.connect(DB_NAME)
+        con = sqlite3.connect(DB_PATH)
         cur = con.cursor()
     except sqlite3.Error as e:
-        log(Status.ERR, f"could not establish sqlite3 connection on {DB_NAME},", str(e))
+        log(Status.ERR, f"could not establish sqlite3 connection on {DB_PATH},", str(e))
         raise sqlite3.DatabaseError("Could not establish sqlite3 connection")
     return (con, cur)
 
@@ -76,13 +74,13 @@ def drop_table() -> void:
     """
     con, cur = establish()
     try:
-        log(Status.WARN, f"dropping table [{TABLE_NAME}]")
-        cur.execute(f"DROP TABLE IF EXISTS {TABLE_NAME};")
+        log(Status.WARN, f"dropping table [{DB_TABLE}]")
+        cur.execute(f"DROP TABLE IF EXISTS {DB_TABLE};")
     except sqlite3.Error as e:
-        raise sqlite3.OperationalError(f"Could not drop table [{TABLE_NAME}].", str(e))
+        raise sqlite3.OperationalError(f"Could not drop table [{DB_TABLE}].", str(e))
     finally:
         ccfree(con,cur)
-    log(Status.OK, "from drop_table:", f"table [{TABLE_NAME}] has been dropped successfully.")
+    log(Status.OK, "from drop_table:", f"table [{DB_TABLE}] has been dropped successfully.")
 
 def create_table() -> void:
     """
@@ -90,7 +88,7 @@ def create_table() -> void:
     Raises sqlite3.DatabaseError if fails.
     """
     # ---
-    cmd = f"CREATE TABLE IF NOT EXISTS {TABLE_NAME}(\n"
+    cmd = f"CREATE TABLE IF NOT EXISTS {DB_TABLE}(\n"
     for _, mem in Attributes.__members__.items():
         attr, dtype = mem.value
         cmd += f"\t{attr} {dtype},\n"
@@ -106,11 +104,11 @@ def create_table() -> void:
         raise sqlite3.DatabaseError("Could not create table", str(e))
     finally:
         ccfree(con,cur)
-    log(Status.OK, f"from create_table: successfully created table [{TABLE_NAME}].")
+    log(Status.OK, f"from create_table: successfully created table [{DB_TABLE}].")
 
 def table_exists() -> bool:
     con, cur = establish()
-    cmd = f"SELECT name FROM sqlite_master WHERE type='table' AND name='{TABLE_NAME};'"
+    cmd = f"SELECT name FROM sqlite_master WHERE type='table' AND name='{DB_TABLE};'"
     try:
         res = cur.execute(cmd).fetchone()
         if (not res):
@@ -124,13 +122,13 @@ def table_exists() -> bool:
         raise Exception("from table_exists: ", e)
     finally:
         ccfree(con,cur)
-    log(Status.OK, f"from table_exists: table found {TABLE_NAME}.")
+    log(Status.OK, f"from table_exists: table found {DB_TABLE}.")
     return True
 
 def insert(entry: list | tuple):
     con, cur = establish()
     log(Status.OK, "connection established")
-    cmd = f"INSERT INTO {TABLE_NAME} VALUES(?,?,?,?,?,?,?);"
+    cmd = f"INSERT INTO {DB_TABLE} VALUES(?,?,?,?,?,?,?);"
     try:
         if (type(entry) is list):
             cur.executemany(cmd, entry)
@@ -141,13 +139,13 @@ def insert(entry: list | tuple):
         raise sqlite3.OperationalError("Failed to insert into problems table.")
     finally:
         ccfree(con,cur)
-    log(Status.OK, f"inserted values into {TABLE_NAME}.")
+    log(Status.OK, f"inserted values into {DB_TABLE}.")
 
 def select_contest(cid: int) -> tuple:
     con, cur = establish()
     li = []
     try:
-        cmd = f"SELECT {Attributes.INDEX.first} FROM {TABLE_NAME} WHERE cid == ?;"
+        cmd = f"SELECT {Attributes.INDEX.first} FROM {DB_TABLE} WHERE cid == ?;"
         res = cur.execute(cmd, (cid,)).fetchall()
         if (not res):
             return (False, li)
@@ -163,6 +161,7 @@ def select_contest(cid: int) -> tuple:
     log(Status.OK, f"contest found.")
     return (True, li)
 
+# TODO: finish this bih
 def select_problem(cid: int, pindex: str):
     con, cur = establish()
     try:
@@ -170,7 +169,7 @@ def select_problem(cid: int, pindex: str):
             f"{Attributes.RATING.first}," +
             f"{Attributes.TAGS.first}," +
             f"{Attributes.SOLVED.first}" +
-            f"from {TABLE_NAME};"
+            f"from {DB_TABLE};"
         )
         print(cmd)
     except sqlite3.Error as e:
