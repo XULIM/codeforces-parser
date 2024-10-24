@@ -1,4 +1,5 @@
 import os
+import asyncio
 
 from typing import Any
 from aiohttp import ClientSession
@@ -9,22 +10,48 @@ from time import time, sleep
 from datetime import timedelta
 
 from lib.ua import Rotator
+from lib.plog import Status, log
+from lib.consts import UA_PATH, HTML_PATH
 
-UA_PATH = "ua_list"
+async def get_user_agents():
+    """
+    Gets user-agents from "https://www.useraggentlist.net/".
+
+    Returns tuple in the form of (Status.OK, user_agents: str),
+        where user_agents are separated by "\\n" if parsing is successful.
+    Otherwise returns a tuple in the form of (Status.ERR, e: str),
+        where e is the error message.
+    """
+    url = "https://www.useragentlist.net/"
+    user_agents = []
+    sleep(1) # To avoid timeout due to spamming
+    try:
+        async with ClientSession() as sesh:
+            async with sesh.get(url) as res:
+                if res.status == 200:
+                    soup = BeautifulSoup(await res.text(), "html.parser")
+                    for user_agent in soup.select("pre.wp-block-code"):
+                        user_agents.append(user_agent.text)
+                else:
+                    print("Error: ", res.status)
+    except Exception as e:
+        return (Status.ERR, str(e))
+
+    try:
+        with open(UA_PATH, "w") as f:
+            for ua in user_agents:
+                f.write(ua + "\n")
+        return (Status.OK, user_agents)
+    except Exception as e:
+        return (Status.ERR, str(e))
+
+if (not os.path.exists(UA_PATH)):
+    asyncio.run(get_user_agents())
 with open(UA_PATH, "r") as f:
     USER_AGENTS = f.read().splitlines()
 ROTATOR = Rotator(USER_AGENTS)
 HTML_PATH = "index.html"
 
-class Status(Enum):
-    OK = (0, "[OK]")
-    ERR = (1, "[ERR]")
-    WARN = (2, "[!]")
-    def __init__(self, num, string):
-        self.num = num
-        self.string = string
-    def __str__(self):
-        return self.string
 
 class Endpoints(Enum):
     Problems = "problemset.problems?"
@@ -68,43 +95,6 @@ def file_refresh(file: str, cd_days = 21, cd_hours = 0, cd_minutes = 0, cd_secon
     except Exception as e:
         raise Exception("from file_refresh: file access error. Details: ", str(e))
 
-def log(stat: Status, msg="", *args):
-    """
-    Could throw an error if the passed in args does not have a valid __str__ method.
-    """
-    print(f"{str(stat)}::{msg}", *args, sep="\n\t>> ")
-
-async def get_user_agents():
-    """
-    Gets user-agents from "https://www.useraggentlist.net/".
-
-    Returns tuple in the form of (Status.OK, user_agents: str),
-        where user_agents are separated by "\\n" if parsing is successful.
-    Otherwise returns a tuple in the form of (Status.ERR, e: str),
-        where e is the error message.
-    """
-    url = "https://www.useragentlist.net/"
-    user_agents = []
-    sleep(1) # To avoid timeout due to spamming
-    try:
-        async with ClientSession() as sesh:
-            async with sesh.get(url) as res:
-                if res.status == 200:
-                    soup = BeautifulSoup(await res.text(), "html.parser")
-                    for user_agent in soup.select("pre.wp-block-code"):
-                        user_agents.append(user_agent.text)
-                else:
-                    print("Error: ", res.status)
-    except Exception as e:
-        return (Status.ERR, str(e))
-
-    try:
-        with open(UA_PATH, "w") as f:
-            for ua in user_agents:
-                f.write(ua + "\n")
-        return (Status.OK, user_agents)
-    except Exception as e:
-        return (Status.ERR, str(e))
 
 async def get_problems() -> tuple[Status, list]:
     """
@@ -152,6 +142,7 @@ async def get_tests(contest_id: int, index: str):
     with open(HTML_PATH, "r") as f:
         bs = BeautifulSoup(f, "html.parser")
     samples = bs.find("div", {"class": "sample-test"})
+    assert samples is Tag
     # --- 
     def get(name: str, attrs: dict[str,str]):
         res = []
@@ -176,6 +167,7 @@ async def get_tests(contest_id: int, index: str):
     outputs = get("div", {"class":"output"})
     if (outputs is not Status.ERR):
         log(Status.OK, f"successfully parsed the output for {contest_id} {index}.")
+        return Status.ERR
     else:
         log(Status.ERR, f"from get_tests: could not parse ouput for {contest_id} {index}.")
     return (inputs, outputs)
