@@ -1,3 +1,7 @@
+All files should be located in a folder in home directory and 
+be referenced by absolute paths.
+    - perhaps .cfp folder or have it located in .locals
+    - store index.html, UA_PATH, templates, etc.
 work on gen module to generate files for contest.
 
 the input and output of each problem is not stored by default
