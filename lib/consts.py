@@ -2,15 +2,18 @@ import os
 from enum import Enum
 from lib.plog import Status, log
 
-DATA = "~/.local/share/cfp/"
+DATA = os.path.expanduser("~") + "/.local/share/cfp/"
 if not os.path.exists(DATA):
+    log(Status.WARN, "default data directory not found.", "creating directory.")
     try:
-        os.makedirs(DATA, 755)
-        log(Status.OK, "directory created.")
+        os.mkdir(DATA, mode=711)
     except Exception as e:
-        log(Status.ERR, "from consts module.", "an unexpected error occurred.", e)
+        log(Status.ERR,
+            "an unexpected error happened while creating default data directory.",
+            e)
+    log(Status.OK, "default data directory created.")
 else:
-    log(Status.OK, "directory exists.", "proceeding")
+    log(Status.OK, "default data directory detected (dddd).", "proceeding.")
 
 DB_PATH = DATA + "results.db"
 DB_TABLE = "problems"
