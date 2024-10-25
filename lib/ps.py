@@ -33,20 +33,19 @@ async def get_user_agents():
                     for user_agent in soup.select("pre.wp-block-code"):
                         user_agents.append(user_agent.text)
                 else:
-                    print("Error: ", res.status)
+                    raise Exception(f"from get_user_agents [{res.status}]: could not get user agents.")
     except Exception as e:
-        return (Status.ERR, str(e))
+        raise Exception(f"from get_user_agents: and unexpected error occurred.", e)
 
     try:
+        log(Status.OK, "from get_user_agents: writing to file.", f"@{UA_PATH}.")
         with open(UA_PATH, "w") as f:
             for ua in user_agents:
                 f.write(ua + "\n")
-        return (Status.OK, user_agents)
     except Exception as e:
-        return (Status.ERR, str(e))
+        raise Exception(f"from get_user_agents: could not write to file: {UA_PATH}.")
 
-if (not os.path.exists(UA_PATH)):
-    asyncio.run(get_user_agents())
+asyncio.run(get_user_agents())
 with open(UA_PATH, "r") as f:
     USER_AGENTS = f.read().splitlines()
 ROTATOR = Rotator(USER_AGENTS)
