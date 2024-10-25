@@ -1,8 +1,9 @@
 import os
 import atexit
 import asyncio
-from lib import db, ps, consts
-from lib.ps import Status, log, file_refresh
+from lib import db, ps
+from lib.ps import Status, get_user_agents, log, file_refresh
+from lib.consts import *
 
 type void = None
 
@@ -11,12 +12,12 @@ def exit_handler() -> None:
     print("Exiting Programme.")
 
 async def populate_table(forced: bool = False) -> void:
-    if (not forced and not file_refresh(consts.DB_PATH, cd_days=3)):
-        log(Status.OK, "from populate_table:", f"file {consts.DB_PATH} already exists.", "proceeding.")
+    if (not forced and not file_refresh(DB_PATH, cd_days=3)):
+        log(Status.OK, "from populate_table:", f"file {DB_PATH} already exists.", "proceeding.")
         return
     log(Status.WARN, "from populate_table:",
-        f"file {consts.DB_PATH} needs to be refreshed or the action is forced.",
-        f"proceeding with file refresh for {consts.DB_PATH}."
+        f"file {DB_PATH} needs to be refreshed or the action is forced.",
+        f"proceeding with file refresh for {DB_PATH}."
     )
     # note that sqlite3 creates the file upon establishing a
     # sqlite3.Connection to the file if it does not exist.
@@ -40,8 +41,7 @@ async def main() -> void:
             "rating": 1500,
             "tags": ["implementation", "dp", "segment tree"]
         }
-        curr_dir = "./"
-        print(os.listdir(curr_dir))
+        await populate_table()
     except Exception as e:
         log(Status.ERR, str(e))
 
