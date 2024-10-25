@@ -1,12 +1,13 @@
 import os
-import functools
+from functools import cache
+
 from lib import db
 from lib.plog import Status, log
 from lib.consts import TEMPLATE_CPP
 
 type void = None
 
-@functools.cache
+@cache
 def catfile(template: str):
     with open(template, "r") as f:
         temp = f.read()
